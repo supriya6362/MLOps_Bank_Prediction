@@ -26,7 +26,7 @@ MLFLOW_DB = BASE_DIR / "mlflow.db"
 
 
 # --------------------------------------------------
-# MLflow Tracking Database
+# MLFLOW TRACKING DATABASE
 # --------------------------------------------------
 
 mlflow.set_tracking_uri(
@@ -56,14 +56,12 @@ y_test = pd.read_csv(
 
 
 print("Data loaded successfully!")
-
 print("Training data:", X_train.shape)
-
 print("Testing data:", X_test.shape)
 
 
 # --------------------------------------------------
-# MLflow Experiment
+# MLFLOW EXPERIMENT
 # --------------------------------------------------
 
 mlflow.set_experiment(
@@ -72,7 +70,7 @@ mlflow.set_experiment(
 
 
 # --------------------------------------------------
-# MODEL
+# XGBOOST MODEL
 # --------------------------------------------------
 
 model = XGBClassifier(
@@ -89,7 +87,7 @@ model = XGBClassifier(
 
 
 # --------------------------------------------------
-# MLflow RUN
+# MLFLOW RUN
 # --------------------------------------------------
 
 with mlflow.start_run(
@@ -102,6 +100,11 @@ with mlflow.start_run(
         X_train,
         y_train
     )
+
+
+    # --------------------------------------------------
+    # PREDICTIONS
+    # --------------------------------------------------
 
     predictions = model.predict(
         X_test
@@ -141,6 +144,11 @@ with mlflow.start_run(
     # --------------------------------------------------
 
     mlflow.log_param(
+        "model",
+        "XGBClassifier"
+    )
+
+    mlflow.log_param(
         "n_estimators",
         300
     )
@@ -170,6 +178,11 @@ with mlflow.start_run(
         0.8
     )
 
+    mlflow.log_param(
+        "random_state",
+        42
+    )
+
 
     # --------------------------------------------------
     # LOG METRICS
@@ -197,12 +210,18 @@ with mlflow.start_run(
 
 
     # --------------------------------------------------
-    # LOG MODEL
+    # LOG XGBOOST MODEL
     # --------------------------------------------------
+
+    print("\nLogging XGBoost model to MLflow...")
 
     mlflow.sklearn.log_model(
         model,
-        "model"
+        name="model",
+        skops_trusted_types=[
+            "xgboost.core.Booster",
+            "xgboost.sklearn.XGBClassifier"
+        ]
     )
 
 
@@ -211,7 +230,7 @@ with mlflow.start_run(
     # --------------------------------------------------
 
     print("\n======================================")
-    print(" MLflow Training Completed!")
+    print(" MLFLOW TRAINING COMPLETED!")
     print("======================================")
 
     print("Accuracy :", accuracy)
@@ -229,11 +248,5 @@ with mlflow.start_run(
         "Bank_Marketing_Prediction"
     )
 
-    mlflow.sklearn.log_model(
-    model,
-    name="model",
-    skops_trusted_types=[
-        "xgboost.core.Booster",
-        "xgboost.sklearn.XGBClassifier"
-    ]
-)
+    print("\nMLflow Database:")
+    print(MLFLOW_DB)
